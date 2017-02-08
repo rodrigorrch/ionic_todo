@@ -13,7 +13,14 @@ app.config(function($stateProvider, $urlRouterProvider) {
 
     $stateProvider.state('new', {
         url: '/new',
-        templateUrl: 'templates/novo.html'
+        templateUrl: 'templates/novo.html',
+        controller: "NovoCtrl"
+    });
+
+    $stateProvider.state('edit', {
+        url: '/edit/:indice',
+        templateUrl: 'templates/novo.html',
+        controller: "EditCtrl"
     });
 
     $urlRouterProvider.otherwise('/list');
@@ -38,46 +45,93 @@ app.run(function($ionicPlatform) {
     });
 });
 
-var tarefa = [{
-        "texto": "Realizar as atividades do curso",
-        "data": new Date(),
-        "feita": false
-    },
-    {
-        "texto": "Passear com o cachorro",
-        "data": new Date(),
-        "feita": true
-    }
-];
-
-app.controller('ListaCtrl', function($scope) {
+app.controller('ListaCtrl', function($scope, $state, TarefaService) {
     // auqi vem a implementacao do meu controller
 
-    $scope.tarefas = tarefas;
+    $scope.tarefas = TarefaService.lista();
 
     $scope.concluir = function(indice) {
-        $scope.tarefas[indice].feita = true;
+        TarefaService.concluir(indice);
     }
 
     $scope.apagar = function(indice) {
-        $scope.tarefas.splice(indice);
+        TarefaService.apagar(indice);
+    }
+
+    $scope.editar = function(indice) {
+        $state.go('edit', { indice: indice });
     }
 });
 
-app.controller('NovoCtrl', function($scope, $state) {
-    // auqi vem a implementacao do meu controller
+app.controller('NovoCtrl', function($scope, $state, TarefaService) {
+    // aqui vem a implementacao do meu controller
+
+    $scope.tarefa = {
+        "texto": '',
+        "data": new Date(),
+        "feita": false
+    };
 
     $scope.salvar = function() {
 
-        var tarefa = {
-            "texto": $scope.texto, // <input ng-model="texto"...
-            "data": new Date(),
-            "feita": false
-        };
-
-        tarefas.push(tarefa);
+        TarefaService.inserir($scope.tarefa);
 
         $state.go('list');
 
+    }
+});
+
+app.controller('EditCtrl', function($scope, $state, $stateParams, TarefaService) {
+    // auqi vem a implementacao do meu controller
+
+    $scope.indice = $stateParams.indice; //indice passado pela rota
+
+    $scope.tarefa = angular.copy(TarefaService.obtem($scope.indice));
+
+    $scope.salvar = function() {
+
+        TarefaService.alterar($scope.indice, $scope.tarefa);
+
+        $state.go('list');
+
+    }
+});
+
+app.factory('TarefaService', function() {
+
+    var tarefas = JSON.parse(window.localStorage.getItem('db_tarefas') || '[]');
+
+    function persistir() {
+        window.localStorage.setItem('db_tarefas', JSON.stringify(tarefas));
+    }
+
+    return {
+        lista: function() {
+            return tarefas;
+        },
+
+        obtem: function(indice) {
+            return tarefas[indice];
+        },
+
+        inserir: function(tarefa) {
+            tarefas.push(tarefa);
+            persistir();
+        },
+
+        alterar: function(indice, tarefa) {
+            tarefas[indice] = tarefa;
+            persistir();
+        },
+
+        concluir: function(indice) {
+            tarefas[indice].concluida = true;
+            persistir();
+        },
+
+        apagar: function(indice) {
+            tarefas.splice(indice, 1);
+            persistir();
+        }
     }
 });

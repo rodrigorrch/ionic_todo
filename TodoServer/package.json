@@ -1,0 +1,21 @@
+{
+  "name": "todoserver",
+  "version": "1.0.0",
+  "description": "Aplicação web do curso Ionic/Cordova do prof. Dr. Henrique Dezani",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "ionic",
+    "nodejs",
+    "cordova",
+    "dezani",
+    "curso"
+  ],
+  "author": "Prof. Dr. Henrique Dezani",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.14.0"
+  }
+}
